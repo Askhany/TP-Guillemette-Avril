@@ -1,0 +1,176 @@
+<!--
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Socket.IO chat</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+      #input:focus { outline: none; }
+      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages > li { padding: 0.5rem 1rem; }
+      #messages > li:nth-child(odd) { background: #efefef; }
+      #status { font-size: 0.9rem; color: #444; margin: 0.5rem 0; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <div id="status"></div>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" />
+      <button>Send</button>
+      <button id="toggle-btn">Disconnect</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Initialise Socket.IO avec reconnexion automatique
+      const socket = io({ autoConnect: true, reconnection: true });
+
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages');
+      const status = document.getElementById('status');
+      const toggleButton = document.getElementById('toggle-btn');
+
+      // Envoyer un message !!! uniquement si connecté !!!
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value && socket.connected) {
+          socket.emit('chat message', input.value);
+          input.value = '';
+        }
+      });
+
+      // Affiche les messages reçus
+      socket.on('chat message', (msg) => {
+        const item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      // Mise à jour du statut des users
+      socket.on('user status', (data) => {
+        const line = document.createElement('li');
+        line.textContent = `User ${data.id} ${data.status}`;
+        line.style.fontStyle = 'italic';
+        messages.appendChild(line);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      // Déconnecter / reconnecter via le bouton
+      toggleButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (socket.connected) {
+          socket.disconnect();
+        } else {
+          socket.connect();
+        }
+      });
+
+      // Mettre à jour l'affichage du bouton
+      socket.on('connect', () => { toggleButton.innerText = 'Disconnect'; status.textContent = "Connected"; });
+      socket.on('disconnect', () => { toggleButton.innerText = 'Connect'; status.textContent = "Disconnected"; });
+    </script>
+  </body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: Arial, sans-serif; }
+      #form { position: fixed; bottom: 0; left: 0; right: 0; display: flex; }
+      #input { flex: 1; padding: 0.5rem; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 0.5rem 1rem; }
+      #status { text-align: center; font-size: 0.9rem; color: #444; }
+    </style>
+  </head>
+  <body>
+
+    <ul id="messages"></ul>
+    <div id="status">Status: Connecting...</div>
+
+    <!-- Formulaire d'envoi -->
+    <form id="form">
+      <input id="input" autocomplete="off" placeholder="Type a message..." />
+      <button>Send</button>
+      <button id="toggle-btn">Disconnect</button>
+    </form>
+
+    <!-- Charger Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Connexion Socket.IO avec reconnexion automatique
+      const socket = io({ autoConnect: true, reconnection: true });
+
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages');
+      const statusDiv = document.getElementById('status');
+      const toggleBtn = document.getElementById('toggle-btn');
+
+      // Ajouter un message dans la liste
+      function addMessage(text, italic = false) {
+        const item = document.createElement('li');
+        if (italic) item.style.fontStyle = 'italic';
+        item.textContent = text;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+
+      // Envoi du message au serveur
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value && socket.connected) {
+          socket.emit('chat message', input.value);
+          input.value = '';
+        }
+      });
+
+      // État de connexion affiché
+      socket.on('connect', () => {
+        statusDiv.textContent = 'Status: Connected';
+        toggleBtn.innerText = 'Disconnect';
+        addMessage(`You connected (id: ${socket.id})`, true);
+      });
+
+      socket.on('disconnect', () => {
+        statusDiv.textContent = 'Status: Disconnected';
+        toggleBtn.innerText = 'Connect';
+      });
+
+      // Réception d'un message normal
+      socket.on('chat message', (msg) => {
+        addMessage(msg);
+      });
+
+      // Réception d'un message de statut utilisateur
+      socket.on('user status', (data) => {
+        addMessage(`User ${data.id} ${data.status}`, true);
+      });
+
+      // Rejoindre ou quitter des rooms (facultatif)
+      // Exemple : socket.emit('join room', 'room1');
+      socket.on('room message', (msg) => {
+        addMessage(msg, true);
+      });
+
+      // Bouton Connect / Disconnect
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (socket.connected) socket.disconnect();
+        else socket.connect();
+      });
+    </script>
+
+  </body>
+</html>

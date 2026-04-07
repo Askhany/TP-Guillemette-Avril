@@ -1,0 +1,76 @@
+@startuml :
+
+title Négociation de connexion TLS : Client -> Serveur sécurisé
+
+' Participants
+actor Client
+participant Serveur
+
+' ================================
+' Client initie la connexion TLS
+' ================================
+' Le client prépare une socket sécurisée et envoie un "ClientHello"
+' ClientHello contient : versions TLS supportées, chiffrements supportés, nombre aléatoire
+Client -> Serveur : ClientHello "Version TLS, chiffrements supportés, random"
+
+' =================================
+'Serveur répond avec ServerHello
+' =================================
+' Le serveur choisit la version TLS et le chiffrement à utiliser
+' Il renvoie aussi un nombre aléatoire et parfois un certificat
+Serveur -> Client : ServerHello "Version TLS choisie, chiffrements, random"
+Serveur -> Client : Certificate "Certificat serveur pour authentification"
+
+' =========================================
+' Optionnel : demande de certificat client
+' ==========================================
+' Si le serveur veut authentifier le client (rare côté web), il peut demander le certificat
+Serveur -> Client : CertificateRequest "Demande certificat client (optionnel)"
+
+' ==============================================
+' Client répond avec son certificat si demandé
+' ===============================================
+Client -> Serveur : Certificate "Certificat client (optionnel)"
+
+' ================================
+' Client envoie la clé pré-master
+' ===============================
+' La clé pré-master sera utilisée pour générer la clé de session symétrique
+' Elle est chiffrée avec la clé publique du serveur
+Client -> Serveur : ClientKeyExchange "Clé pré-master chiffrée"
+
+' =============================================
+' Client et serveur génèrent la clé de session
+' =============================================
+' À partir de la clé pré-master et des nombres aléatoires échangés, ils calculent la clé symétrique
+note over Client,Serveur: Génération clé de session symétrique pour chiffrer les données
+
+' ==========================
+' Changement de chiffrement
+' ===========================
+' Les futurs messages seront chiffrés avec la clé de session
+Client -> Serveur : ChangeCipherSpec "Passage en mode chiffré"
+Serveur -> Client : ChangeCipherSpec "Confirmation passage en mode chiffré"
+
+' ==================
+' Fin handshake TLS
+' ==================
+' Les deux parties envoient un message Finished pour confirmer que le handshake est terminé
+Client -> Serveur : Finished "Handshake terminé côté client"
+Serveur -> Client : Finished "Handshake terminé côté serveur"
+
+note over Client,Serveur: Connexion TLS établie - toutes les données futures sont chiffrées
+
+' ============================
+' Echange de données chiffrées
+' =============================
+Client -> Serveur : ApplicationData "Message utilisateur chiffré"
+Serveur -> Client : ApplicationData "Réponse chiffrée"
+
+' ====================================
+' Fermeture sécurisée de la connexion
+' ====================================
+Client -> Serveur : Alert "Fin de session TLS (close_notify)"
+Serveur -> Client : Alert "Fin de session confirmée (close_notify)"
+
+@enduml

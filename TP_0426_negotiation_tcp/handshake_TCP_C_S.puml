@@ -1,0 +1,55 @@
+@startuml :
+
+title Négociation de connexion TCP : Client -> Serveur
+
+actor Client
+participant Serveur
+
+' =================================
+' Création de la socket côté client
+' =================================
+' Le client prépare une socket TCP qui permettra de communiquer avec le serveur
+Client -> Serveur : socket()
+' Cette étape ne transmet pas encore de données, elle réserve juste le canal de communication
+
+' ===============================
+' Demande de connexion TCP (SYN)
+' ===============================
+' Le client envoie un paquet SYN au serveur pour demander l'ouverture d'une connexion
+Client -> Serveur : SYN "Demande de connexion"
+
+' =============================
+' Réponse du serveur (SYN-ACK)
+' =============================
+' Le serveur reçoit le SYN, accepte la demande et répond avec un SYN-ACK pour confirmer
+Serveur -> Client : SYN-ACK "Réponse et confirmation"
+
+' ===================================
+' Confirmation finale du client (ACK)
+' ===================================
+' Le client reçoit le SYN-ACK et envoie un ACK pour confirmer que la connexion est établie
+Client -> Serveur : ACK "Confirmation finale"
+
+' ====================================
+' Note explicative : connexion établie
+' ====================================
+' Une fois le handshake en 3 étapes terminé, la connexion est prête pour échanger des données
+note over Client,Serveur: Connexion établie -> prêt pour échange de données
+
+' ===================================
+' Echange de données après connexion
+' ===================================
+' Le client envoie un message au serveur
+Client -> Serveur : Data "Message utilisateur" --> envoi d'un message
+' Le serveur peut répondre avec un message d’écho ou traitement
+Serveur -> Client : Data "Réponse / écho"    --> réponse éventuelle
+
+' ===============================
+' Fermeture de la connexion TCP
+' ===============================
+' Lorsque le client souhaite terminer la communication, il envoie un paquet FIN
+Client -> Serveur : FIN "Fin de connexion"
+' Le serveur accuse réception de la fermeture avec un ACK
+Serveur -> Client : ACK "Fin confirmée"
+
+@enduml
