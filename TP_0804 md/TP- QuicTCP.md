@@ -10,10 +10,10 @@ L’idée est de voir en pratique ce qui change entre les deux : handshake, nomb
 ## 2. Partie 1 — Capture d’un trafic HTTP utilisant TCP
 
 1. Combien de paquets TCP sont observés dans la capture ?  
-   * <span style="color:#1f77b4">Sur la capture HTTP classique (comme celle vers msftconnecttest.com), j’ai un volume total de plus de 12 000 paquets, dont une bonne partie en TCP. En filtrant sur `tcp`, on voit plusieurs centaines de paquets liés aux connexions web pendant la durée du TP.</span>
+   * <span style="color:#1f77b4">J’ai un volume total de plus de 12 000 paquets, dont une bonne partie en TCP. En filtrant sur `tcp`, on voit plusieurs centaines de paquets liés aux connexions web pendant la durée du TP.</span>
 
 2. Quelle adresse IP correspond au serveur ?  
-   * <span style="color:#1f77b4">Pour l’exemple détaillé, le serveur HTTP utilisé est 2.21.244.154, qui correspond au service msftconnecttest.com utilisé par Windows pour tester la connexion.</span>
+   * <span style="color:#1f77b4">Le serveur HTTP utilisé est 2.21.244.154, qui correspond au service msftconnecttest.com utilisé par Windows pour tester la connexion.</span>
 
 3. Quel port TCP est utilisé ?  
    * <span style="color:#1f77b4">Le flux que j’ai analysé en détail utilise le port 80 côté serveur, donc du HTTP non chiffré. Sur d’autres sites, on pourrait avoir du 443 pour HTTPS, mais ici on reste sur du 80 pour bien voir le contenu.</span>
